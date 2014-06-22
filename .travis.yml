@@ -1,38 +1,29 @@
-# Linux (https://github.com/travis-ci-tester/toolchain-table)
+# Mac OS X (https://github.com/travis-ci-tester/toolchain-table)
 
 language:
-    - python
-
-python:
-    - "3.3"
+    - objective-c
 
 env:
-    - TOOLCHAIN=default CONFIG=Release
-    - TOOLCHAIN=default CONFIG=Debug
-    - TOOLCHAIN=clang_libstdcxx CONFIG=Release
-    - TOOLCHAIN=clang_libstdcxx CONFIG=Debug
-    - TOOLCHAIN=gcc48 CONFIG=Release
-    - TOOLCHAIN=gcc48 CONFIG=Debug
-    - TOOLCHAIN=analyze CONFIG=Release
-    - TOOLCHAIN=analyze CONFIG=Debug
-    - TOOLCHAIN=sanitize_address CONFIG=Release
-    - TOOLCHAIN=sanitize_address CONFIG=Debug
-    - TOOLCHAIN=sanitize_leak CONFIG=Release
-    - TOOLCHAIN=sanitize_leak CONFIG=Debug
-    - TOOLCHAIN=sanitize_thread CONFIG=Release
-    - TOOLCHAIN=sanitize_thread CONFIG=Debug
+    - TOOLCHAIN=default TEST="--test" CONFIG=Release
+    - TOOLCHAIN=default TEST="--test" CONFIG=Debug
+    - TOOLCHAIN=libcxx TEST="--test" CONFIG=Release
+    - TOOLCHAIN=libcxx TEST="--test" CONFIG=Debug
+    - TOOLCHAIN=clang_libstdcxx TEST="--test" CONFIG=Release
+    - TOOLCHAIN=clang_libstdcxx TEST="--test" CONFIG=Debug
+    - TOOLCHAIN=xcode TEST="--test" CONFIG=Release
+    - TOOLCHAIN=xcode TEST="--test" CONFIG=Debug
+    - TOOLCHAIN=gcc TEST="--test" CONFIG=Release
+    - TOOLCHAIN=gcc TEST="--test" CONFIG=Debug
+    - TOOLCHAIN=ios-nocodesign EXTRA="--iossim" CONFIG=Release
+    - TOOLCHAIN=ios-nocodesign EXTRA="--iossim" CONFIG=Debug
+        # Extra cmake modules needed for iOS testing:
+        # * https://github.com/ruslo/sugar/tree/master/cmake/core#sugar_add_ios_gtest
+    - TOOLCHAIN=analyze TEST="--test" CONFIG=Release
+    - TOOLCHAIN=analyze TEST="--test" CONFIG=Debug
 
 install:
-    # install gcc-4.8 with c++11 support: https://github.com/travis-ci-tester/travis-test-gcc-cxx-11
-    - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-    - sudo apt-get update
-    - sudo apt-get install g++-4.8
-    # -- end
-    # https://github.com/travis-ci-tester/travis-test-clang-cxx-11
-    - sudo apt-get install libstdc++-4.8-dev
-    # -- end
-    - sudo apt-get install cmake
-    - sudo apt-get install libcurl3-dev
+    - brew install cmake
+    - brew install python3
     # install cmake toolchains and script
     - POLLY_VERSION="0.4.4"
     - wget "https://github.com/ruslo/polly/archive/v${POLLY_VERSION}.tar.gz"
@@ -54,6 +45,9 @@ install:
     - which cmake
     - cmake --version
     # -- end
+    # https://github.com/ruslo/polly/wiki/Toolchain-list#ios-nocodesign
+    - export XCODE_XCCONFIG_FILE="${POLLY_ROOT}/scripts/NoCodeSign.xcconfig"
+    # -- end
 
 script:
-    - build.py --toolchain ${TOOLCHAIN} --verbose --test --config ${CONFIG}
+    - build.py --toolchain ${TOOLCHAIN} --config ${CONFIG} --verbose ${TEST} ${EXTRA}
